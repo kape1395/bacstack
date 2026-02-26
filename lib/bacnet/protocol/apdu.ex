@@ -487,7 +487,7 @@ defmodule BACnet.Protocol.APDU do
        ) do
     window_size =
       case window_size do
-        0 -> nil
+        0 -> 1
         window_size -> window_size
       end
 
