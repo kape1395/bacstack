@@ -485,6 +485,12 @@ defmodule BACnet.Protocol.APDU do
            tags::binary>>,
          true
        ) do
+    window_size =
+      case window_size do
+        0 -> nil
+        window_size -> window_size
+      end
+
     {:ok, {invoke_id, seq_number, window_size, service, tags}}
   end
 
