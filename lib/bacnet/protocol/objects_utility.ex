@@ -1509,6 +1509,21 @@ defmodule BACnet.Protocol.ObjectsUtility do
     cast_value_to_type(subtype, property, value, %{opts | allow_partial: false})
   end
 
+  # Handle a full-array read that returned a single bare element instead of a
+  # 1-element list (some devices omit the wrapping when the array has exactly
+  # one item -- the wire decoder can't tell "array of 1" from "scalar")
+  defp cast_value_to_type({:array, _subtype} = type, property, %Encoding{} = value, %{
+         allow_partial: false
+       } = opts) do
+    cast_value_to_type(type, property, [value], opts)
+  end
+
+  defp cast_value_to_type({:array, _subtype, _size} = type, property, %Encoding{} = value, %{
+         allow_partial: false
+       } = opts) do
+    cast_value_to_type(type, property, [value], opts)
+  end
+
   # Handle array struct subtypes differently
   defp cast_value_to_type({:array, {:struct, _sub} = subtype}, property, value, opts)
        when is_list(value) do

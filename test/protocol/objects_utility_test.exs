@@ -416,6 +416,28 @@ defmodule BACnet.Test.Protocol.ObjectsUtilityTest do
              )
   end
 
+  test "cast property to value object_list with a single bare element (no array wrapping)" do
+    # Some devices' object_list contains only one entry, and the constructed tag
+    # decoder cannot distinguish "array of 1" from "scalar" on the wire, so the
+    # property value arrives as a bare Encoding instead of a 1-element list.
+    assert {:ok, %BACnet.Protocol.BACnetArray{size: 1} = array} =
+             ObjectsUtility.cast_property_to_value(
+               %ObjectIdentifier{type: :device, instance: 1100},
+               :object_list,
+               %Encoding{
+                 encoding: :primitive,
+                 extras: [],
+                 type: :object_identifier,
+                 value: %ObjectIdentifier{type: :device, instance: 1100}
+               },
+               []
+             )
+
+    assert BACnet.Protocol.BACnetArray.to_list(array) == [
+             %ObjectIdentifier{type: :device, instance: 1100}
+           ]
+  end
+
   defp get_read_property_multiple_ack_stub() do
     %BACnet.Protocol.Services.Ack.ReadPropertyMultipleAck{
       results: [
